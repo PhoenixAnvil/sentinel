@@ -4,7 +4,7 @@ from sentinel import cli
 def test_cli_monitor(monkeypatch):
     called = {}
 
-    def mock_monitor_api(url):
+    def mock_monitor_api(url, interval, count):
         called['url'] = url
 
     monkeypatch.setattr('sentinel.cli.monitor_api', mock_monitor_api)
