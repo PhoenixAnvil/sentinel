@@ -2,13 +2,13 @@ import requests
 import time
 
 def load_test_api(url, requests_count):
-    print(f"Starting load test on {url} with {requests_count} requests")
-    success = 0
-    failure = 0
+    """Run a simple load test against an API by sending repeated GET requests."""
+    print(f"Starting load test on {url} with {requests_count} requests...")
 
+    success, failure = 0, 0
     start_time = time.time()
 
-    for i in range(requests_count):
+    for _ in range(requests_count):
         try:
             response = requests.get(url)
             if response.status_code == 200:
@@ -18,10 +18,13 @@ def load_test_api(url, requests_count):
         except requests.RequestException:
             failure += 1
 
-    end_time = time.time()
-    total_time = end_time - start_time
+    total_time = time.time() - start_time
 
-    print(f"Load Test Completed: {success} Successes, {failure} Failures, Time Taken: {total_time:.2f}s")
+    print(f"\n✅ Load Test Completed")
+    print(f"✔️  Successes: {success}")
+    print(f"❌ Failures: {failure}")
+    print(f"⏱️  Time Taken: {total_time:.2f} seconds")
+
     return {
         "success": success,
         "failure": failure,
