@@ -1,20 +1,22 @@
-from sentinel.utils.requests import send_request
 from time import sleep
+from sentinel.utils.requests import send_request
 
 def monitor_api(url, interval=0, count=1):
-    result = {}
-    if interval == 0:
+    """Monitor an API endpoint with optional polling."
+    If `interval` is 0 or negative, send a single request."
+    If `count` is None, poll indefinitely."
+    """
+    if interval <= 0:
         return send_request(url)
-    elif interval > 0:
-        counter = 0
-        while True:
-            try:
-                if counter < count:
-                    result = send_request(url)
-                    sleep(interval)
-                    counter += 1
-                else:
-                    break
-            except KeyboardInterrupt:
-                print("Monitoring stopped by user")
-                return
+    
+    try:
+        if count is None:
+            while True:
+                send_request(url)
+                sleep(interval)
+        else:
+            for _ in range(count):
+                send_request(url)
+                sleep(interval)
+    except KeyboardInterrupt:
+        print("Monitoring stopped by user")
