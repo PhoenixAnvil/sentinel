@@ -1,33 +1,58 @@
-import pytest
-import sys
-from sentinel import cli
 from sentinel.monitor import monitor_api
+from unittest.mock import patch, MagicMock
+import pytest
 
-def test_monitor_api():
-    result = monitor_api("https://httpbin.org/get")
-    assert result['status'] == 200
+# Test: monitor_api sends single request if interval is 0
+def test_monitor_single_request(monkeypatch):
+    called = {}
 
-def test_monitor_with_interval_and_count(monkeypatch):
-    called_urls = []
+    def mock_send_request(url):
+        called["url"] = url
+        return {"status": 200}
+    
+    monkeypatch.setattr("sentinel.monitor.send_request", mock_send_request)
+    result = monitor_api("https://example.com", interval=0)
+    assert result["status"] == 200
+    assert called["url"] == "https://example.com"
 
-    # Mock monitor_api to track calls
-    def mock_monitor_api(url, interval=0, count=1):
-        for _ in range(count):
-            called_urls.append(url)
+# Test: monitor_api sends request 'count' times with interval
+def test_monitor_with_count(monkeypatch):
+    calls = []
 
-    # Mock time.sleep to skip actual delay
+    def mock_send_request(url):
+        calls.append(url)
+    
+    monkeypatch.setattr("sentinel.monitor.send_request", mock_send_request)
+    monkeypatch.setattr("time.sleep", lambda x: None)  # Skip delay
+    monitor_api("https://example.com", interval=1, count=3)
+
+    assert len(calls) == 3
+    assert all(url == "https://example.com" for url in calls)
+
+# Test: monitor_api runs until KeyboardInterrupt when count is None
+def test_monitor_infinite_with_interrupt(monkeypatch):
+    call_count = {"count": 0}
+
+    def mock_send_request(url):
+        call_count["count"] += 1
+        if call_count["count"] == 3:
+            raise KeyboardInterrupt()
+        return {"status": 200}
+    
+    monkeypatch.setattr("sentinel.monitor.send_request", mock_send_request)
     monkeypatch.setattr("time.sleep", lambda x: None)
 
-    # Replace the real function with mock
-    monkeypatch.setattr("sentinel.cli.monitor_api", mock_monitor_api)
+    monitor_api("https://example.com", interval=1, count=None)
+    assert call_count["count"] == 3
 
-    # Simulate CLI args: sentinel monitor <url> --interval 1 --count 3
-    test_args = ['sentinel', 'monitor', 'https://example.com', '--interval', '2', '--count', '3']
-    monkeypatch.setattr(sys, 'argv', test_args)
+# Test: monitor_api prints message on KeyboardInterrupt
+def test_monitor_interrupt_prints(monkeypatch, capsys):
+    def mock_send_request(url):
+        raise KeyboardInterrupt()
+    
+    monkeypatch.setattr("sentinel.monitor.send_request", mock_send_request)
+    monkeypatch.setattr("time.sleep", lambda x: None)
 
-    # Run the CLI
-    cli.main()
-
-    # Assert the API was called 3 times
-    assert len(called_urls) == 3
-    assert all(url == 'https://example.com' for url in called_urls)
+    monitor_api("https://example.com", interval=1, count=None)
+    captured = capsys.readouterr()
+    assert "Monitoring stopped by user" in captured.out
