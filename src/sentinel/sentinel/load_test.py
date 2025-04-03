@@ -1,10 +1,15 @@
-import requests
 import time
+
+import requests
+
 from sentinel import logger
+
 
 def load_test_api(url, requests_count):
     """Run a simple load test against an API by sending repeated GET requests."""
-    logger.info(f"Starting load test on {url} with {requests_count} requests...")
+    logger.info(
+        f"Starting load test on {url} with {requests_count} requests..."
+    )
 
     success, failure = 0, 0
     start_time = time.time()
@@ -30,5 +35,5 @@ def load_test_api(url, requests_count):
     return {
         "success": success,
         "failure": failure,
-        "time_taken": total_time
+        "time_taken": total_time,
     }

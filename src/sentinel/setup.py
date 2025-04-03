@@ -7,13 +7,7 @@ setup(
     author="Jason Alan Smith",
     packages=find_packages(),
     include_package_data=True,
-    install_requires=[
-        "requests"
-    ],
-    entry_points={
-        "console_scripts": [
-            "sentinel=sentinel.cli:main"
-        ]
-    },
+    install_requires=["requests"],
+    entry_points={"console_scripts": ["sentinel=sentinel.cli:main"]},
     python_requires=">=3.8",
 )

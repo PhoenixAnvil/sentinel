@@ -7,7 +7,9 @@ logger.setLevel(logging.INFO)
 # File handler (default)
 file_handler = logging.FileHandler("sentinel.log")
 file_handler.setLevel(logging.INFO)
-file_format = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
+file_format = logging.Formatter(
+    "%(asctime)s [%(levelname)s] %(message)s"
+)
 file_handler.setFormatter(file_format)
 logger.addHandler(file_handler)
 
