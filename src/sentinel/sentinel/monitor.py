@@ -1,5 +1,7 @@
 from time import sleep
+
 from sentinel.utils.requests import send_request
+
 
 def monitor_api(url, interval=0, count=1):
     """Monitor an API endpoint with optional polling."
@@ -8,7 +10,7 @@ def monitor_api(url, interval=0, count=1):
     """
     if interval <= 0:
         return send_request(url)
-    
+
     try:
         if count is None:
             while True:
